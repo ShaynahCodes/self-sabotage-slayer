@@ -56,10 +56,6 @@ python -m http.server 8000
 
 Then visit `http://localhost:8000`.
 
-## Hosting
-
-For a basic static web host, upload **`index.html`, `style.css`, and `game.js` together into the site's public web root**. On Hostinger web hosting, that is generally the domain's `public_html` directory. No `npm install`, backend process, Python runtime, or database setup is required for the deployed game.
-
 ## Project structure
 
 ```text
