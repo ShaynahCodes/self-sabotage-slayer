@@ -42,11 +42,13 @@ You face 11 bosses inspired by trading and decision-making pitfalls. Every encou
 - **Phosphor Icons**, **Animate.css**, and **Google Fonts**, loaded from external CDNs
 - **Web Audio API** for synthesized sound effects
 
+GitHub recognizes the standalone `.html`, `.css`, and `.js` files as separate languages. A small Tailwind theme configuration remains in the HTML head so the CDN applies it before the game renders.
+
 This is a **static, client-side project**. It has no server-side application, database, authentication, or build step. An internet connection is needed to load the external styling, icons, and font assets.
 
 ## Run locally
 
-Open `index.html` in a modern browser, or serve the folder locally:
+Keep all three source files in the same folder. Open `index.html` in a modern browser, or serve the folder locally:
 
 ```bash
 python -m http.server 8000
@@ -56,13 +58,15 @@ Then visit `http://localhost:8000`.
 
 ## Hosting
 
-For a basic static web host, upload **`index.html` into the site's public web root**. On Hostinger web hosting, that is generally the domain's `public_html` directory. No `npm install`, backend process, Python runtime, or database setup is required for the deployed game.
+For a basic static web host, upload **`index.html`, `style.css`, and `game.js` together into the site's public web root**. On Hostinger web hosting, that is generally the domain's `public_html` directory. No `npm install`, backend process, Python runtime, or database setup is required for the deployed game.
 
 ## Project structure
 
 ```text
 self-sabotage-slayer/
-├── index.html                 # Complete application: structure, styling, and game logic
+├── index.html                 # Game structure and Tailwind theme setup
+├── style.css                  # Custom styling, animations, and responsive rules
+├── game.js                    # Turn-based combat logic, state, events, and audio
 ├── docs/
 │   ├── desktop-gameplay.png   # Desktop gameplay preview
 │   └── mobile-gameplay.png    # Mobile gameplay preview
