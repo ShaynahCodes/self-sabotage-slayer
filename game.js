@@ -400,6 +400,8 @@
             const m = document.getElementById('modal-overlay');
             m.classList.add('hidden');
             m.classList.remove('flex', 'opacity-100');
+            m.classList.add('opacity-0');
+            document.getElementById('modal-content').classList.add('scale-95');
         }
 
         function showModal(title, desc, iconHTML, action, btnText = "CONTINUE") {
@@ -423,8 +425,7 @@
                 init();
             } else if (gameState.modalAction === 'nextLevel') {
                 hideModal();
-                // Check if upgrade should be offered (at start of levels 4 and 7)
-                // Note: level was already incremented in levelComplete, so check for 4 and 7 (0-indexed)
+                // Offer Trading Journal before Stages 5 and 8 (zero-indexed levels 4 and 7).
                 if (gameState.level === 4 || gameState.level === 7) {
                     showUpgradeSelection();
                 } else {
@@ -438,17 +439,17 @@
         }
 
         function showUpgradeSelection() {
-            // At level 6 (before level 7): Sniper Vision can appear
-            // At level 3 (before level 4): Exclude Sniper Vision (clashes with Choppy Market)
+            // Before Stage 8: Sniper Vision can appear.
+            // Before Stage 5: Exclude Sniper Vision (Choppy Market).
             let choices = [];
             
             if (gameState.level === 7) {
-                // Level 7 upgrade: Sniper Vision can be offered + 1 random
+                // Stage 8 upgrade: Sniper Vision can be offered + 1 random
                 const shuffled = [...gameState.availableUpgrades].sort(() => Math.random() - 0.5);
                 if (shuffled.length < 2) return loadLevel();
                 choices = shuffled.slice(0, 2);
             } else {
-                // Level 4: Exclude Sniper Vision, pick 2 random
+                // Stage 5 upgrade: exclude Sniper Vision, pick 2 random
                 const poolWithoutSniper = gameState.availableUpgrades.filter(u => u.id !== 'sniperVision');
                 if (poolWithoutSniper.length < 2) return loadLevel();
                 const shuffled = [...poolWithoutSniper].sort(() => Math.random() - 0.5);
@@ -481,6 +482,8 @@
             const m = document.getElementById('upgrade-overlay');
             m.classList.add('hidden');
             m.classList.remove('flex', 'opacity-100');
+            m.classList.add('opacity-0');
+            document.getElementById('upgrade-content').classList.add('scale-95');
         }
 
         function showMarketModal(marketType) {
@@ -526,6 +529,8 @@
             const m = document.getElementById('market-overlay');
             m.classList.add('hidden');
             m.classList.remove('flex', 'opacity-100');
+            m.classList.add('opacity-0');
+            document.getElementById('market-content').classList.add('scale-95');
             
             // Process any pending logs after popup is dismissed
             if (gameState.pendingLogs && gameState.pendingLogs.length > 0) {
@@ -582,6 +587,8 @@
             gameState.currentBoss = { ...data };
             gameState.player.resetCooldown = 0;
             gameState.player.waitCooldown = 0;
+            gameState.bossStunnedTurns = 0;
+            gameState.volatilityTurns = 0;
             
             document.getElementById('boss-icon').className = `ph ${data.icon} text-6xl ${data.color} drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]`;
             document.getElementById('boss-name').innerText = data.name;
@@ -768,6 +775,10 @@
             }
         }
 
+        function equityPct(points) {
+            return Math.round((points / gameState.player.maxHp) * 100);
+        }
+
         function useTool(tool) {
             if (!gameState.isPlayerTurn || gameState.isGameOver) return;
             if (!gameState.tools[tool]) return;
@@ -788,11 +799,13 @@
                     // Apply Bear Market reduction if active
                     const mentorMarket = getMarketCondition();
                     const finalHealAmt = (mentorMarket.effect === "bear") ? Math.floor(healAmt * 0.75) : healAmt;
-                    gameState.player.hp = Math.min(gameState.player.maxHp, gameState.player.hp + finalHealAmt);
+                    const hpBeforeMentor = gameState.player.hp;
+                    gameState.player.hp = Math.min(gameState.player.maxHp, hpBeforeMentor + finalHealAmt);
+                    const mentorRestoredPct = equityPct(gameState.player.hp - hpBeforeMentor);
                     updatePlayerUI();
                     sfx.heal();
-                    log("Mentor Call! Your coach reminds you of your edge. +40% HP restored.", "heal");
-                    floatText(`+${finalHealAmt}`, 'heal');
+                    log(`Mentor Call! Your coach reminds you of your edge. +${mentorRestoredPct}% Mental Equity restored.`, "heal");
+                    floatText(`+${mentorRestoredPct}%`, 'heal');
                     break;
                     
                 case 'newsFilter':
@@ -924,6 +937,7 @@
                 let logMsg = "";
                 let txtType = "hit";
                 let multiplier = 1;
+                let snipeHit = false;
 
                 // Handle Charge
                 if (gameState.player.isCharged && (type === 'execute' || type === 'journal')) {
@@ -991,13 +1005,15 @@
                         heal = Math.floor(heal * 0.75);
                     }
                     
-                    gameState.player.hp = Math.min(gameState.player.maxHp, gameState.player.hp + heal);
+                    const hpBeforeReset = gameState.player.hp;
+                    gameState.player.hp = Math.min(gameState.player.maxHp, hpBeforeReset + heal);
+                    const resetRestoredPct = equityPct(gameState.player.hp - hpBeforeReset);
                     
                     logMsg = getRandomText('breathe');
                     txtType = "heal";
                     sfx.heal();
-                    floatText(`+${heal}`, 'heal');
-                    log(`${logMsg} <span class="text-emerald-400 ml-1">[+${heal}%]</span>`, 'heal');
+                    floatText(`+${resetRestoredPct}%`, 'heal');
+                    log(`${logMsg} <span class="text-emerald-400 ml-1">[+${resetRestoredPct}%]</span>`, 'heal');
                     updatePlayerUI();
                     setTimeout(bossTurn, 800);
                     return;
@@ -1021,6 +1037,7 @@
                     const roll = Math.random();
                     
                     if (roll > successThreshold) { 
+                        snipeHit = true;
                         // Success: Base (20-30) + (Level * 3.0)
                         const baseMin = 20;
                         const baseMax = 30;
@@ -1049,6 +1066,7 @@
                     } else {
                         dmg = 4 * multiplier;
                         logMsg = getRandomText('auditMiss');
+                        txtType = 'warning'; // A charged SNIPE miss is never a critical hit.
                         sfx.error();
                         floatText(`${dmg}`, 'hit');
                         // Log handled separately for minor hit
@@ -1060,7 +1078,7 @@
                      gameState.currentBoss.hp -= dmg;
                      updateBossUI();
                      // Log with appropriate format based on action type
-                     if (type === 'journal' && dmg <= 4) {
+                     if (type === 'journal' && !snipeHit) {
                          log(`${logMsg} Minor Hit: ${dmg}`, txtType);
                      } else if (dmg > 0) {
                          log(`${logMsg} Hit: ${dmg}`, txtType);
@@ -1134,11 +1152,14 @@
                 if (gameState.volatilityTurns > 0) {
                     const reducedDmg = Math.floor(dmg * 0.7); // 30% reduction
                     gameState.volatilityTurns--;
-                    log(`Volatility Stop absorbed ${dmg - reducedDmg}% damage! (${gameState.volatilityTurns} turns left)`, 'heal');
+                    log(`Volatility Stop absorbed ${equityPct(dmg - reducedDmg)}% damage! (${gameState.volatilityTurns} turns left)`, 'heal');
                     dmg = reducedDmg;
                 }
                 
+                const hpBeforeAttack = gameState.player.hp;
                 gameState.player.hp -= dmg;
+                // Show the percentage actually removed from the visible Mental Equity bar.
+                const damagePct = equityPct(Math.min(dmg, Math.max(0, hpBeforeAttack)));
                 updatePlayerUI();
                 sfx.error();
                 
@@ -1146,8 +1167,8 @@
                 shakeWrapper.classList.add('shake');
                 setTimeout(()=> shakeWrapper.classList.remove('shake'), 400);
                 
-                floatText(`-${dmg}`, 'playerDmg');
-                log(`${atk.text} <span class="text-red-500 ml-1">[-${dmg}%]</span>`, 'damage');
+                floatText(`-${damagePct}%`, 'playerDmg');
+                log(`${atk.text} <span class="text-red-500 ml-1">[-${damagePct}%]</span>`, 'damage');
             }
 
             if (gameState.player.hp <= 0) {
