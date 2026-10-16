@@ -1,0 +1,13 @@
+# Local and development data
+.git/
+.replit
+.agents/
+.env
+.env.*
+!.env.example
+__pycache__/
+.DS_Store
+Thumbs.db
+*.log
+node_modules/
+dist/
