@@ -100,3 +100,24 @@
                 display: flex;
             }
         }
+
+        /* Dark, thin scrollbars to match the theme (Firefox + Chrome/Edge 121+) */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(148, 163, 184, 0.25) transparent;
+        }
+
+        /* Older Chrome/Edge and Safari */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.25); border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.45); }
+        ::-webkit-scrollbar-button { display: none; }
+
+        /* Short screens (small laptops, 125-150% Windows scaling, browser zoom):
+           tighten the arena and log so the whole game fits without an outer scrollbar */
+        @media (max-height: 720px) {
+            #arena { min-height: 120px; }
+            #boss-icon { font-size: 3rem; }
+            #log-section { min-height: 100px; }
+        }

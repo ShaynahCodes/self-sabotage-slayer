@@ -783,6 +783,13 @@
             if (!gameState.isPlayerTurn || gameState.isGameOver) return;
             if (!gameState.tools[tool]) return;
             
+            // Don't let Mentor Call be wasted at full Mental Equity (tool is NOT consumed)
+            if (tool === 'mentorCall' && gameState.player.hp >= gameState.player.maxHp) {
+                sfx.error();
+                log("Mental Equity is already full. Save your mentor for when you need them.", "warning");
+                return;
+            }
+            
             sfx.click();
             
             switch(tool) {

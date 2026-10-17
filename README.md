@@ -2,7 +2,7 @@
 
 **An interactive, turn-based browser RPG about trading psychology and overcoming self-sabotage.** Battle 11 bosses, manage your Mental Equity, adapt to changing market conditions, and choose upgrades as you advance.
 
-**[Play Self Sabotage Slayer](https://self-sabotage-slayer.com/)**
+**[Play Self Sabotage Slayer](https://mediumblue-oryx-440075.hostingersite.com/)**
 
 ## Preview
 
