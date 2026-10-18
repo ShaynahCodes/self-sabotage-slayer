@@ -6,7 +6,7 @@
 
 ## Preview
 
-![Desktop gameplay: Comfort Zone King boss battle, Mental Equity meter, toolbelt, and four action buttons](docs/desktop-gameplay.png)
+![Desktop gameplay: Comfort Zone King boss battle, Mental Equity meter, toolbelt, and four action buttons](docs/desktop-gameplay.webp)
 
 <details>
 <summary>View mobile gameplay</summary>
