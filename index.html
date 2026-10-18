@@ -44,7 +44,7 @@
         }
     </script>
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=20261017-tips">
 </head>
 <body class="w-full h-full flex items-center justify-center font-sans antialiased text-slate-300 select-none">
 
@@ -84,15 +84,15 @@
             <div id="arena" class="flex flex-col items-center justify-center relative min-h-[160px]">
                 <div id="boss-container" class="flex flex-col items-center transition-all duration-300">
                     <div class="relative mb-2 animate-float">
-                        <i id="boss-icon" class="ph ph-ghost text-6xl text-indigo-400 drop-shadow-[0_0_15px_rgba(129,140,248,0.5)]"></i>
+                        <i id="boss-icon" class="ph text-6xl"></i>
                     </div>
-                    <h2 id="boss-name" class="text-2xl font-display font-bold text-white tracking-wide mb-1 drop-shadow-lg text-center leading-tight">Boss Name</h2>
+                    <h2 id="boss-name" class="text-2xl font-display font-bold text-white tracking-wide mb-1 drop-shadow-lg text-center leading-tight">&nbsp;</h2>
                     <div class="w-48 h-1 bg-slate-800 relative overflow-hidden rounded-full mt-2">
                         <div id="boss-hp-bar" class="absolute top-0 left-0 h-full bg-indigo-500 transition-all duration-300" style="width: 100%"></div>
                     </div>
                     <div class="flex justify-between w-48 mt-1 text-[9px] text-slate-500 font-mono">
                         <span>RESISTANCE</span>
-                        <span id="boss-hp-val">60/60</span>
+                        <span id="boss-hp-val"></span>
                     </div>
                 </div>
                 <div id="damage-layer" class="absolute inset-0 pointer-events-none flex justify-center items-center"></div>
@@ -283,7 +283,7 @@
         </div>
     </div>
 
-    <script src="game.js"></script>
+    <script src="game.js?v=20261017-tips"></script>
 </body>
 </html>
 

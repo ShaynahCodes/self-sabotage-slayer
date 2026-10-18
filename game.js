@@ -361,7 +361,7 @@
         });
 
         // --- Coach tips (first fight + first look at tools) ---
-        const coach = { active: false, step: null, toolsShown: false, resetShown: false };
+        const coach = { active: false, step: null, toolsShown: false, resetShown: false, hideTimer: null };
         const COACH_KEY = 'sss-tips-done';
         function coachDone() { try { return localStorage.getItem(COACH_KEY) === '1'; } catch (e) { return false; } }
         function markCoachDone() { try { localStorage.setItem(COACH_KEY, '1'); } catch (e) { /* ignore */ } }
@@ -396,39 +396,49 @@
             sfx.click();
         }
         function coachStartRun() {
-            if (coachDone()) { coach.active = false; coach.toolsShown = true; hideCoach(); return; }
+            clearTimeout(coach.hideTimer);
+            if (coachDone()) { coach.active = false; hideCoach(); return; }
             coach.active = true;
             coach.toolsShown = false;
             coach.resetShown = false;
             showCoach('attack', 'Start here! Tap <b class="text-blue-300">EXECUTE</b> to attack the boss.', ['btn-execute']);
         }
+        function coachMaybeFinish() {
+            if (coach.resetShown && coach.toolsShown) {
+                coach.active = false;
+                markCoachDone();
+            }
+        }
         // Called after the player's move, once the boss has answered.
         function coachAfterTurn(lastMove) {
-            if (!coach.active || gameState.isGameOver || gameState.level !== 0) return;
+            if (!coach.active || gameState.isGameOver) return;
+            if (lastMove === 'breathe') coach.resetShown = true;
             if (coach.step === 'attack') hideCoach();
             if (coach.step === 'reset') {
-                if (lastMove === 'breathe') { coach.resetShown = true; hideCoach(); }
+                if (lastMove === 'breathe') hideCoach();
+                coachMaybeFinish();
                 return;
             }
             const hpPct = gameState.player.hp / gameState.player.maxHp;
             if (!coach.resetShown && hpPct <= 0.75 && gameState.player.resetCooldown === 0) {
+                clearTimeout(coach.hideTimer);
                 showCoach('reset', 'The boss gets a turn after every move. When your Mental Equity drops, tap <b class="text-emerald-300">RESET</b> to restore it.', ['btn-breathe'], ['hp-container']);
+                return;
             }
+            if (coach.step === 'tools') {
+                clearTimeout(coach.hideTimer);
+                coach.hideTimer = setTimeout(() => { if (coach.step === 'tools') hideCoach(); }, 4000);
+            }
+            coachMaybeFinish();
         }
         function coachLevelStart() {
             if (!coach.active) return;
-            if (gameState.level === 1 && !coach.toolsShown) {
+            clearTimeout(coach.hideTimer);
+            if (gameState.level >= 1 && !coach.toolsShown) {
                 coach.toolsShown = true;
                 showCoach('tools', 'Your <b>Toolbelt</b> has three special tools. Each works once per game and doesn\'t use up your turn. Tap <i class="ph ph-question"></i> to see them.', [], ['toolbelt']);
             } else {
                 hideCoach();
-            }
-        }
-        function coachAfterToolStage() {
-            if (coach.step === 'tools') {
-                coach.active = false;
-                markCoachDone();
-                setTimeout(() => { if (coach.step === 'tools') hideCoach(); }, 4000);
             }
         }
 
@@ -1212,7 +1222,6 @@
                 setControls(true);
                 updatePlayerUI();
                 coachAfterTurn(gameState.lastMove);
-                if (gameState.level === 1) coachAfterToolStage();
                 return;
             }
 
@@ -1269,7 +1278,6 @@
                 setControls(true);
                 updatePlayerUI(); // Update UI to refresh wait button state
                 coachAfterTurn(gameState.lastMove);
-                if (gameState.level === 1) coachAfterToolStage();
             }
         }
 
@@ -1330,7 +1338,8 @@
         }
 
         function levelComplete() {
-            if (coach.step !== 'tools') hideCoach();
+            clearTimeout(coach.hideTimer);
+            hideCoach();
             const heal = Math.floor(gameState.player.maxHp * 0.1);
             
             // Check if this was the final boss first (don't play normal win sound)
@@ -1366,10 +1375,12 @@
 
         function startGame() {
             const startScreen = document.getElementById('start-screen');
+            // Load the first boss behind the start screen first, so the
+            // placeholder boss and stats never show while it fades out.
+            init();
             startScreen.classList.add('animate__animated', 'animate__fadeOut');
             setTimeout(() => {
                 startScreen.style.display = 'none';
-                init();
             }, 300);
         }
 
