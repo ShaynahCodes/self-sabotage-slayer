@@ -131,13 +131,13 @@
                 </div>
                 <div class="flex items-start gap-2">
                     <span>📞</span>
-                    <div><span class="text-slate-200 font-semibold">Mentor Call:</span> <span class="text-slate-400">Instantly heal +40% HP.</span></div>
+                    <div><span class="text-slate-200 font-semibold">Mentor Call:</span> <span class="text-slate-400">Instantly heal 40% of your Mental Equity.</span></div>
                 </div>
                 <div class="flex items-start gap-2">
                     <span>📰</span>
                     <div><span class="text-slate-200 font-semibold">News Filter:</span> <span class="text-slate-400">Stun boss for 2 turns (skips attacks).</span></div>
                 </div>
-                <p class="text-slate-500 text-[9px] italic pt-1 border-t border-slate-700">One-time use per run. Use wisely!</p>
+                <p class="text-slate-500 text-[9px] italic pt-1 border-t border-slate-700">Each tool works once per run. Using one doesn't use up your turn.</p>
             </div>
         </div>
 
@@ -150,6 +150,15 @@
             <div class="absolute bottom-0 left-0 w-full h-4 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
         </div>
 
+        <!-- COACH TIP (first fight) -->
+        <div id="coach" class="hidden flex-none px-3 pt-2 pb-1 bg-[#0b1121]" role="status" aria-live="polite">
+            <div class="coach-card flex items-start gap-2 rounded-xl px-3 py-2">
+                <i class="ph-fill ph-lightbulb text-gold text-base leading-5 shrink-0"></i>
+                <p id="coach-text" class="flex-1 text-[12px] leading-5 text-slate-200"></p>
+                <button type="button" onclick="skipCoach()" class="shrink-0 text-[10px] font-display uppercase tracking-wider text-slate-500 hover:text-slate-300 pt-0.5">Hide tips</button>
+            </div>
+        </div>
+
         <!-- SECTION 3: CONTROLS -->
         <div class="flex-none p-3 bg-[#0b1121] border-t border-glassBorder safe-area-bottom">
             <div class="grid grid-cols-2 gap-2 h-full">
@@ -159,7 +168,7 @@
                         <span class="font-display font-bold text-slate-200 tracking-wide text-sm">EXECUTE</span>
                         <i class="ph ph-sword text-blue-400 text-lg"></i>
                     </div>
-                    <span class="text-[10px] text-slate-500 truncate">Consistent strategy.</span>
+                    <span class="text-[10px] text-slate-500 truncate" id="btn-execute-sub">Reliable attack.</span>
                 </button>
 
                 <button onclick="playerAction('breathe')" id="btn-breathe" class="glass-btn p-3 rounded-xl flex flex-col gap-1 text-left group disabled:opacity-50 disabled:cursor-not-allowed">
@@ -167,7 +176,7 @@
                         <span class="font-display font-bold text-slate-200 tracking-wide text-sm" id="btn-breathe-text">RESET</span>
                         <i class="ph ph-heartbeat text-emerald-400 text-lg"></i>
                     </div>
-                    <span class="text-[10px] text-slate-500 truncate" id="btn-breathe-sub">Restore mental cap.</span>
+                    <span class="text-[10px] text-slate-500 truncate" id="btn-breathe-sub">Restore health.</span>
                 </button>
 
                 <button onclick="playerAction('wait')" id="btn-wait" class="glass-btn p-3 rounded-xl flex flex-col gap-1 text-left group disabled:opacity-50 disabled:cursor-not-allowed transition-all">
@@ -175,7 +184,7 @@
                         <span class="font-display font-bold text-slate-200 tracking-wide text-sm" id="btn-wait-text">WAIT</span>
                         <i class="ph ph-crosshair text-cyan-400 text-lg"></i>
                     </div>
-                    <span class="text-[10px] text-slate-500 truncate" id="btn-wait-sub">Charge up. Next 2x Dmg.</span>
+                    <span class="text-[10px] text-slate-500 truncate" id="btn-wait-sub">Next hit does 2x.</span>
                 </button>
 
                 <button onclick="playerAction('journal')" id="btn-journal" class="glass-btn p-3 rounded-xl flex flex-col gap-1 text-left group disabled:opacity-50 disabled:cursor-not-allowed transition-all">
@@ -183,7 +192,7 @@
                         <span class="font-display font-bold text-slate-200 tracking-wide text-sm">SNIPE</span>
                         <i class="ph ph-lightning text-gold text-lg"></i>
                     </div>
-                    <span class="text-[10px] text-slate-500 truncate">High Risk, High Reward.</span>
+                    <span class="text-[10px] text-slate-500 truncate" id="btn-journal-sub">Weak or powerful hit.</span>
                 </button>
 
             </div>
@@ -208,7 +217,7 @@
         <div class="glass-panel p-6 rounded-2xl max-w-sm w-full border-t border-slate-700 shadow-2xl transform scale-95 transition-transform duration-500" id="upgrade-content">
             <div class="text-5xl mb-3 inline-block"><i class="ph ph-notebook text-indigo-400"></i></div>
             <h2 class="text-xl font-display font-bold text-white mb-1 tracking-tight">TRADING JOURNAL</h2>
-            <p class="text-slate-500 text-[10px] mb-4">Choose a permanent upgrade for this run.</p>
+            <p class="text-slate-500 text-[10px] mb-4">Pick one upgrade. It lasts for the rest of this run.</p>
             
             <div id="upgrade-options" class="space-y-3 mb-2">
                 <!-- Upgrade buttons will be inserted here -->
@@ -229,38 +238,48 @@
     </div>
 
     <!-- START SCREEN -->
-    <div id="start-screen" class="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center">
-        <div class="glass-panel p-8 rounded-2xl max-w-md w-full border-t border-slate-700 shadow-2xl animate__animated animate__fadeIn">
-            <div class="mb-2">
-                <i class="ph ph-shield-check text-7xl text-indigo-400 animate-float drop-shadow-[0_0_20px_rgba(129,140,248,0.5)]"></i>
+    <div id="start-screen" class="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md overflow-y-auto p-4 sm:p-6 text-center">
+        <div class="min-h-full flex items-center justify-center">
+        <div class="glass-panel p-5 sm:p-7 rounded-2xl max-w-md w-full border-t border-slate-700 shadow-2xl animate__animated animate__fadeIn">
+            <div class="mb-1">
+                <i class="ph ph-shield-check text-6xl text-indigo-400 animate-float drop-shadow-[0_0_20px_rgba(129,140,248,0.5)]"></i>
             </div>
-            <h1 class="text-3xl sm:text-4xl font-display font-bold text-white mb-6 tracking-tight whitespace-nowrap">SELF SABOTAGE SLAYER</h1>
-            
-            <div class="text-left glass-panel p-4 rounded-xl mb-6 text-xs space-y-3">
-                <h3 class="font-display font-bold text-white text-sm mb-3 text-center">HOW TO PLAY</h3>
-                <div class="flex items-start gap-2">
-                    <i class="ph ph-sword text-blue-400 text-sm leading-4"></i>
-                    <div class="leading-4"><span class="text-slate-200 font-semibold">EXECUTE</span> <span class="text-slate-400">- Consistent damage. Your bread and butter attack.</span></div>
+            <h1 class="text-3xl sm:text-4xl font-display font-bold text-white mb-2 tracking-tight leading-none text-balance">SELF SABOTAGE SLAYER</h1>
+            <p class="text-slate-300 text-sm leading-snug mb-5">Your worst trading habits are the bosses. Defeat all 11 before your <span class="text-emerald-400 font-semibold">Mental Equity</span> runs out.</p>
+
+            <div class="text-left glass-panel p-4 rounded-xl mb-3 text-xs space-y-2.5">
+                <h3 class="font-display font-bold text-white text-sm mb-1 text-center tracking-wide">HOW TO PLAY</h3>
+                <div class="flex items-center gap-2.5"><span class="sss-bar bg-emerald-500"></span><span class="text-slate-400"><span class="text-slate-200 font-semibold">Mental Equity</span> = your health. Keep it above zero.</span></div>
+                <div class="flex items-center gap-2.5"><span class="sss-bar bg-indigo-500"></span><span class="text-slate-400"><span class="text-slate-200 font-semibold">Resistance</span> = boss health. Bring it to zero.</span></div>
+                <div class="flex items-center gap-2.5"><span class="sss-bar sss-bar-split"></span><span class="text-slate-400">Choose a move, then the boss takes a turn.</span></div>
+            </div>
+
+            <div class="text-left glass-panel p-4 rounded-xl mb-4 text-xs space-y-2.5">
+                <h3 class="font-display font-bold text-white text-sm mb-1 text-center tracking-wide">YOUR MOVES</h3>
+                <div class="flex items-center gap-2.5">
+                    <i class="ph ph-sword text-blue-400 text-base"></i>
+                    <div><span class="text-slate-200 font-semibold">EXECUTE</span> <span class="text-slate-400">Reliable attack.</span></div>
                 </div>
-                <div class="flex items-start gap-2">
-                    <i class="ph ph-heartbeat text-emerald-400 text-sm leading-4"></i>
-                    <div class="leading-4"><span class="text-slate-200 font-semibold">RESET</span> <span class="text-slate-400">- Restore mental equity. Heal yourself.</span></div>
+                <div class="flex items-center gap-2.5">
+                    <i class="ph ph-heartbeat text-emerald-400 text-base"></i>
+                    <div><span class="text-slate-200 font-semibold">RESET</span> <span class="text-slate-400">Restore your health.</span></div>
                 </div>
-                <div class="flex items-start gap-2">
-                    <i class="ph ph-crosshair text-cyan-400 text-sm leading-4"></i>
-                    <div class="leading-4"><span class="text-slate-200 font-semibold">WAIT</span> <span class="text-slate-400">- Charge up for 2x damage on next attack.</span></div>
+                <div class="flex items-center gap-2.5">
+                    <i class="ph ph-crosshair text-cyan-400 text-base"></i>
+                    <div><span class="text-slate-200 font-semibold">WAIT</span> <span class="text-slate-400">Double your next attack's damage.</span></div>
                 </div>
-                <div class="flex items-start gap-2">
-                    <i class="ph ph-lightning text-gold text-sm leading-4"></i>
-                    <div class="leading-4"><span class="text-slate-200 font-semibold">SNIPE</span> <span class="text-slate-400">- High risk, high reward. Big hit or miss.</span></div>
+                <div class="flex items-center gap-2.5">
+                    <i class="ph ph-lightning text-gold text-base"></i>
+                    <div><span class="text-slate-200 font-semibold">SNIPE</span> <span class="text-slate-400">Risk a weak hit for a powerful one.</span></div>
                 </div>
             </div>
-            
-            <p class="text-slate-500 text-[10px] mb-6">Defeat 11 bosses representing your trading demons. Survive with your mental equity intact.</p>
-            
+
+            <p class="text-slate-500 text-[11px] leading-snug mb-5">You'll also have three special tools. Tips will help you through your first fight.</p>
+
             <button onclick="startGame()" class="w-full py-4 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-display font-bold text-lg rounded-xl transition-all shadow-lg shadow-indigo-500/30 btn-glow-anim">
                 START GAME
             </button>
+        </div>
         </div>
     </div>
 

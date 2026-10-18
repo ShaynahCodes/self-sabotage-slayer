@@ -21,10 +21,10 @@ You face 11 bosses inspired by trading and decision-making pitfalls. Every encou
 
 **Combat actions:**
 
-- **Execute:** A dependable attack.
-- **Reset:** Recover Mental Equity, subject to a cooldown.
-- **Wait:** Charge your next attack for double damage.
-- **Snipe:** A high-risk attack with a chance of a bigger hit or a miss.
+- **Execute:** A reliable attack.
+- **Reset:** Restore your Mental Equity. It needs a turn to recover.
+- **Wait:** Double your next attack's damage. It needs 2 turns to recharge.
+- **Snipe:** Risk a weak hit for a powerful one.
 
 **Additional systems:**
 

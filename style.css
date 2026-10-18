@@ -121,3 +121,27 @@
             #boss-icon { font-size: 3rem; }
             #log-section { min-height: 100px; }
         }
+
+
+/* ---------- Onboarding ---------- */
+.sss-bar-split { background: linear-gradient(90deg, #10b981 0 45%, transparent 45% 55%, #6366f1 55%); }
+.text-balance { text-wrap: balance; }
+.sss-step {
+    display: inline-grid; place-items: center; flex: none;
+    width: 1.15rem; height: 1.15rem; border-radius: 9999px;
+    background: rgba(99, 102, 241, .25); color: #c7d2fe;
+    font: 700 .65rem/1 'Rajdhani', sans-serif;
+}
+.sss-bar { display: inline-block; flex: none; width: 1.4rem; height: .35rem; border-radius: 9999px; }
+.coach-card {
+    background: rgba(251, 191, 36, .08);
+    border: 1px solid rgba(251, 191, 36, .28);
+}
+#coach.coach-in .coach-card { animation: coachIn .35s ease-out both; }
+@keyframes coachIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.coach-target { position: relative; border-color: #fbbf24 !important; box-shadow: 0 0 0 2px rgba(251,191,36,.55); animation: coachPulse 1.4s ease-in-out infinite; }
+@keyframes coachPulse { 50% { box-shadow: 0 0 0 5px rgba(251,191,36,.15); } }
+.coach-target-soft { box-shadow: 0 0 0 2px rgba(251,191,36,.55); border-radius: .5rem; }
+@media (prefers-reduced-motion: reduce) {
+    #coach.coach-in .coach-card, .coach-target { animation: none; }
+}

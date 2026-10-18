@@ -360,6 +360,78 @@
             }
         });
 
+        // --- Coach tips (first fight + first look at tools) ---
+        const coach = { active: false, step: null, toolsShown: false, resetShown: false };
+        const COACH_KEY = 'sss-tips-done';
+        function coachDone() { try { return localStorage.getItem(COACH_KEY) === '1'; } catch (e) { return false; } }
+        function markCoachDone() { try { localStorage.setItem(COACH_KEY, '1'); } catch (e) { /* ignore */ } }
+
+        function clearCoachTargets() {
+            document.querySelectorAll('.coach-target, .coach-target-soft').forEach(el => el.classList.remove('coach-target', 'coach-target-soft'));
+        }
+        function showCoach(step, html, targets = [], soft = []) {
+            const box = document.getElementById('coach');
+            const txt = document.getElementById('coach-text');
+            if (!box || !txt) return;
+            coach.step = step;
+            txt.innerHTML = html;
+            clearCoachTargets();
+            targets.forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('coach-target'); });
+            soft.forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('coach-target-soft'); });
+            box.classList.remove('hidden', 'coach-in');
+            void box.offsetWidth;
+            box.classList.add('coach-in');
+        }
+        function hideCoach() {
+            const box = document.getElementById('coach');
+            if (box) box.classList.add('hidden');
+            clearCoachTargets();
+            coach.step = null;
+        }
+        function skipCoach() {
+            coach.active = false;
+            coach.toolsShown = true;
+            markCoachDone();
+            hideCoach();
+            sfx.click();
+        }
+        function coachStartRun() {
+            if (coachDone()) { coach.active = false; coach.toolsShown = true; hideCoach(); return; }
+            coach.active = true;
+            coach.toolsShown = false;
+            coach.resetShown = false;
+            showCoach('attack', 'Start here! Tap <b class="text-blue-300">EXECUTE</b> to attack the boss.', ['btn-execute']);
+        }
+        // Called after the player's move, once the boss has answered.
+        function coachAfterTurn(lastMove) {
+            if (!coach.active || gameState.isGameOver || gameState.level !== 0) return;
+            if (coach.step === 'attack') hideCoach();
+            if (coach.step === 'reset') {
+                if (lastMove === 'breathe') { coach.resetShown = true; hideCoach(); }
+                return;
+            }
+            const hpPct = gameState.player.hp / gameState.player.maxHp;
+            if (!coach.resetShown && hpPct <= 0.75 && gameState.player.resetCooldown === 0) {
+                showCoach('reset', 'The boss gets a turn after every move. When your Mental Equity drops, tap <b class="text-emerald-300">RESET</b> to restore it.', ['btn-breathe'], ['hp-container']);
+            }
+        }
+        function coachLevelStart() {
+            if (!coach.active) return;
+            if (gameState.level === 1 && !coach.toolsShown) {
+                coach.toolsShown = true;
+                showCoach('tools', 'Your <b>Toolbelt</b> has three special tools. Each works once per game and doesn\'t use up your turn. Tap <i class="ph ph-question"></i> to see them.', [], ['toolbelt']);
+            } else {
+                hideCoach();
+            }
+        }
+        function coachAfterToolStage() {
+            if (coach.step === 'tools') {
+                coach.active = false;
+                markCoachDone();
+                setTimeout(() => { if (coach.step === 'tools') hideCoach(); }, 4000);
+            }
+        }
+
         // --- Core Functions ---
         function init() {
             // SAFE RESET
@@ -384,6 +456,7 @@
             hideModal();
             loadLevel();
             updatePlayerUI();
+            coachStartRun();
             
             // INTRO LOGIC (EXACT AS REQUESTED)
             const logBox = document.getElementById('combat-log');
@@ -640,6 +713,7 @@
             gameState.isPlayerTurn = true;
             setControls(true);
             updatePlayerUI();
+            if (gameState.level > 0) coachLevelStart();
         }
 
         function updatePlayerUI() {
@@ -672,12 +746,18 @@
             }
 
             // Charged State
+            const execSub = document.getElementById('btn-execute-sub');
+            const jrnlSub = document.getElementById('btn-journal-sub');
             if (gameState.player.isCharged) {
                 execBtn.classList.add('btn-glow-anim');
                 jrnlBtn.classList.add('btn-glow-anim');
+                if (execSub) { execSub.innerText = "2x ready!"; execSub.classList.add('text-cyan'); execSub.classList.remove('text-slate-500'); }
+                if (jrnlSub) { jrnlSub.innerText = "2x ready!"; jrnlSub.classList.add('text-cyan'); jrnlSub.classList.remove('text-slate-500'); }
             } else {
                 execBtn.classList.remove('btn-glow-anim');
                 jrnlBtn.classList.remove('btn-glow-anim');
+                if (execSub) { execSub.innerText = "Reliable attack."; execSub.classList.remove('text-cyan'); execSub.classList.add('text-slate-500'); }
+                if (jrnlSub) { jrnlSub.innerText = "Weak or powerful hit."; jrnlSub.classList.remove('text-cyan'); jrnlSub.classList.add('text-slate-500'); }
             }
 
             // Cooldown Logic
@@ -688,25 +768,26 @@
             if (gameState.player.resetCooldown > 0) {
                 breatheBtn.disabled = true;
                 breatheBtn.classList.add('btn-cooldown');
-                breatheText.innerText = `RECOVERING (${gameState.player.resetCooldown})`;
-                breatheSub.innerText = "Reset cooldown active.";
+                breatheText.innerText = "RESET";
+                breatheSub.innerText = "Ready next turn.";
             } else {
                 if(gameState.isPlayerTurn) breatheBtn.disabled = false;
                 breatheBtn.classList.remove('btn-cooldown');
                 breatheText.innerText = "RESET";
-                breatheSub.innerText = "Restore mental cap.";
+                breatheSub.innerText = "Restore health.";
             }
 
             if (gameState.player.waitCooldown > 0) {
                 waitBtn.disabled = true;
                 waitBtn.classList.add('btn-cooldown');
-                waitText.innerText = `RECHARGING (${gameState.player.waitCooldown})`;
-                waitSub.innerText = "Wait cooldown active.";
+                const wcd = gameState.player.waitCooldown;
+                waitText.innerText = "WAIT";
+                waitSub.innerText = wcd === 1 ? "Ready next turn." : `Ready in ${wcd} turns.`;
             } else {
                 if(gameState.isPlayerTurn) waitBtn.disabled = false; 
                 waitBtn.classList.remove('btn-cooldown'); 
                 waitText.innerText = "WAIT";
-                waitSub.innerText = "Charge up. Next 2x Dmg.";
+                waitSub.innerText = "Next hit does 2x.";
             }
         }
 
@@ -939,6 +1020,7 @@
 
                 gameState.isPlayerTurn = false;
                 setControls(false);
+                gameState.lastMove = type;
 
                 let dmg = 0;
                 let logMsg = "";
@@ -1129,6 +1211,8 @@
                 gameState.isPlayerTurn = true;
                 setControls(true);
                 updatePlayerUI();
+                coachAfterTurn(gameState.lastMove);
+                if (gameState.level === 1) coachAfterToolStage();
                 return;
             }
 
@@ -1184,6 +1268,8 @@
                 gameState.isPlayerTurn = true;
                 setControls(true);
                 updatePlayerUI(); // Update UI to refresh wait button state
+                coachAfterTurn(gameState.lastMove);
+                if (gameState.level === 1) coachAfterToolStage();
             }
         }
 
@@ -1244,6 +1330,7 @@
         }
 
         function levelComplete() {
+            if (coach.step !== 'tools') hideCoach();
             const heal = Math.floor(gameState.player.maxHp * 0.1);
             
             // Check if this was the final boss first (don't play normal win sound)
@@ -1267,6 +1354,7 @@
 
         function gameOver() {
             gameState.isGameOver = true;
+            hideCoach();
             showModal("BLOWN UP", "Emotions took over. Mental capital depleted.", '<i class="ph ph-skull text-red-500"></i>', 'restart', "REBOOT SYSTEM");
         }
 
