@@ -17,7 +17,7 @@
 
 ## The idea
 
-Trading is as much an emotional test as a technical one. This game turns that rollercoaster into something you can play: every boss is a habit traders fight, and they arrive in the order most traders meet them, from avoiding the charts as a beginner to the overconfidence that can wipe out an account later on. It's meant to be fun and a little ridiculous, and to help players recognize a few of these patterns in themselves.
+Trading is as much an emotional test as a technical one, so this game turns that rollercoaster into something you can play. Every boss is a habit traders fight, arranged to follow a trader's journey as I see it: from beginner habits like avoiding the charts to the overconfidence that can still wipe out an experienced account. It's meant to be fun and a little ridiculous, and to help players recognize a few of these patterns in themselves.
 
 **The bosses, from new trader to mastery:**
 
@@ -52,6 +52,18 @@ You face 11 bosses inspired by trading and decision-making pitfalls. Every encou
 - **Trading Journal** upgrades offered as you progress
 - **Responsive desktop/mobile layout**, fullscreen-fit option, sound effects, and victory animations
 
+## How the game works
+
+Each turn runs through the same loop in `game.js`, driven by one shared `gameState` object:
+
+1. **Player move.** `playerAction()` checks that it's the player's turn and that the move isn't on cooldown, then locks the controls so a turn can't be played twice.
+2. **Damage and effects.** The move's damage or healing is calculated from the current level, the market condition, any upgrades, and WAIT's charge, then applied to the boss or the player.
+3. **Win check.** If the boss's Resistance hits zero, `levelComplete()` restores 10% Mental Equity and moves to the next stage, or plays the victory sequence after the final boss.
+4. **Boss turn.** Otherwise `bossTurn()` counts down cooldowns, picks one of the boss's attacks, and applies market effects and any active tools such as Volatility Stop.
+5. **Loss check and UI.** If Mental Equity hits zero, the run ends. If not, the bars, buttons, battle log, and first-run tips update, and control returns to the player.
+
+Between some stages, `showUpgradeSelection()` offers a choice of two upgrades. Then `loadLevel()` sets up the next boss and its market condition.
+
 ## How it changed after playtesting
 
 1. **Clearer rules.** A How to Play screen now explains Mental Equity, boss Resistance, and each move before the first fight, with short tips during the first battles.
@@ -60,7 +72,10 @@ You face 11 bosses inspired by trading and decision-making pitfalls. Every encou
    - Player health raised from 100 to 150, so each hit takes a smaller share of the bar.
    - RESET now needs a turn to recover after use. The cooldown clears between boss fights.
    - RESET healing scales with level × 1.0 (was × 1.5), and EXECUTE damage with level × 2.0 (was × 2.5).
-   - Boss damage climbs more steadily across the campaign:
+   - Boss damage climbs more steadily across the campaign, from 12–17 per hit at the first boss to 30–60 at the last.
+
+<details>
+<summary>Boss damage by stage</summary>
 
 | Stage | Boss | Damage per hit |
 |---|---|---|
@@ -75,6 +90,8 @@ You face 11 bosses inspired by trading and decision-making pitfalls. Every encou
 | 9 | Greed Goblin | 26–41 |
 | 10 | Pride Pharaoh | 27–42 |
 | 11 | Account Assassin | 30–60 |
+
+</details>
 
 The game was finished and first deployed on Replit.
 
