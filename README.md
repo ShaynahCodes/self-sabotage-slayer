@@ -15,6 +15,24 @@
 
 </details>
 
+## The idea
+
+Trading is as much an emotional test as a technical one. This game turns that rollercoaster into something you can play: every boss is a habit traders fight, and they arrive in the order most traders meet them, from avoiding the charts as a beginner to the overconfidence that can wipe out an account later on. It's meant to be fun and a little ridiculous, and to help players recognize a few of these patterns in themselves.
+
+**The bosses, from new trader to mastery:**
+
+1. Comfort Zone King
+2. Paralysis Golem
+3. FOMO Phantom
+4. Doomscroll Demon
+5. Revenge Raptor
+6. Heartbreak Hedger
+7. Clarity Crusher
+8. Volatility Viper
+9. Greed Goblin
+10. Pride Pharaoh
+11. Account Assassin
+
 ## Gameplay
 
 You face 11 bosses inspired by trading and decision-making pitfalls. Every encounter challenges you to balance damage, recovery, and risk while keeping your **Mental Equity** above zero.
@@ -33,6 +51,32 @@ You face 11 bosses inspired by trading and decision-making pitfalls. Every encou
 - **Market conditions** that modify combat (bullish, choppy, bearish, flash crash)
 - **Trading Journal** upgrades offered as you progress
 - **Responsive desktop/mobile layout**, fullscreen-fit option, sound effects, and victory animations
+
+## How it changed after playtesting
+
+1. **Clearer rules.** A How to Play screen now explains Mental Equity, boss Resistance, and each move before the first fight, with short tips during the first battles.
+2. **Too hard at first.** Friends who played early versions found it too difficult, so I added the toolbelt and adjusted health.
+3. **Then too easy.** After those changes it was possible to win without using the tools, so I rebalanced:
+   - Player health raised from 100 to 150, so each hit takes a smaller share of the bar.
+   - RESET now needs a turn to recover after use. The cooldown clears between boss fights.
+   - RESET healing scales with level × 1.0 (was × 1.5), and EXECUTE damage with level × 2.0 (was × 2.5).
+   - Boss damage climbs more steadily across the campaign:
+
+| Stage | Boss | Damage per hit |
+|---|---|---|
+| 1 | Comfort Zone King | 12–17 |
+| 2 | Paralysis Golem | 13–19 |
+| 3 | FOMO Phantom | 14–21 |
+| 4 | Doomscroll Demon | 15–24 |
+| 5 | Revenge Raptor | 16–27 |
+| 6 | Heartbreak Hedger | 18–28 |
+| 7 | Clarity Crusher | 19–28 |
+| 8 | Volatility Viper | 21–33 |
+| 9 | Greed Goblin | 26–41 |
+| 10 | Pride Pharaoh | 27–42 |
+| 11 | Account Assassin | 30–60 |
+
+The game was finished and first deployed on Replit.
 
 ## Tech stack
 
